@@ -49,15 +49,100 @@ class Level3:
   
   # hàm này viết trả hết tất cả các đường đi
   def UcsFindAll(self, ghost, pacman):
-        return
-   # hàm này viết trả về 1 bước
-  def UCSFindOne(self, ghost, pacman): # UCS*
+    start_x, start_y = ghost
+    goal_x, goal_y = pacman
+    
+    frontier = [(0, start_x, start_y, [])]  # (cost, x, y, path)
+    heapq.heapify(frontier)
+    
+    visited = set()
+    number_of_expanded_nodes = 0
+    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    
+    while frontier:
+        cost, current_x, current_y, path = heapq.heappop(frontier)
         
+        if (current_x, current_y) == (goal_x, goal_y):
+            return path + [(current_x, current_y)], number_of_expanded_nodes
+        
+        if (current_x, current_y) in visited:
+            continue
+        
+        visited.add((current_x, current_y))
+        number_of_expanded_nodes += 1
+        
+        for dx, dy in directions:
+            next_x, next_y = current_x + dx, current_y + dy
+            
+            # Check if the next position is valid (within bounds and not a wall)
+            if (0 <= next_x < len(Board.maze) and 
+                0 <= next_y < len(Board.maze[0]) and 
+                Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8] and  # Wall check
+                (next_x, next_y) not in visited):
                 
-        return None
+                new_cost = cost + 1
+                new_path = path + [(current_x, current_y)]
+                heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
+    
+    return None, number_of_expanded_nodes
+  
+  def UCSFindOne(self, ghost, pacman):
+    start_x, start_y = ghost
+    goal_x, goal_y = pacman
+    
+    frontier = [(0, start_x, start_y, [])]  # (cost, x, y, path)
+    heapq.heapify(frontier)
+    
+    visited = set()
+    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    
+    while frontier:
+        cost, current_x, current_y, path = heapq.heappop(frontier)
+        if (current_x, current_y) == (goal_x, goal_y):
+            if path:
+                return path[0]
+            return (current_x, current_y)
+        
+        if (current_x, current_y) in visited:
+            continue
+        
+        visited.add((current_x, current_y))
+        
+        for dx, dy in directions:
+            next_x, next_y = current_x + dx, current_y + dy
+            
+            # Check if the next position is valid (within bounds and not a wall)
+            if (0 <= next_x < len(Board.maze) and 
+                0 <= next_y < len(Board.maze[0]) and 
+                Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8] and  # Wall check
+                (next_x, next_y) not in visited):
+                
+                new_cost = cost + 1
+                new_path = path + [(current_x, current_y)]
+                heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
+    
+    return None
+  
 
   def updatePos(self):
-    return
+    oldX, oldY = Object.orangeGhostX, Object.orangeGhostY
+    targetPos = self.UCSFindOne((oldX, oldY), (Object.pacmanX, Object.pacmanY))
+    print(oldX,oldY)
+    print(targetPos)
+    if targetPos:
+      targetX, targetY = targetPos
+
+      newX, newY = oldX, oldY
+      if targetX != oldX:
+        newX += (targetX - oldX) // abs(targetX - oldX) 
+      if targetY != oldY:
+        newY += (targetY - oldY) // abs(targetY - oldY)
+
+      Board.coordinates[oldX][oldY] = Board.BLANK
+      Board.coordinates[newX][newY] = Board.ORANGE_GHOST
+
+      Object.orangeGhostX = newX
+      Object.orangeGhostY = newY
   def get_volume(self, ghost_x, ghost_y, pac_x, pac_y, max_distance=15):
     distance = math.sqrt((ghost_x - pac_x) ** 2 + (ghost_y - pac_y) ** 2)  
     volume = max(0.0, 1 - (distance / max_distance))  # 0.1 là âm lượng nhỏ nhất, 1 là lớn nhất

@@ -282,7 +282,7 @@ class Level5():
         ClickOnButton = None
 
         while Config.running and not quit:
-            Config.screen.fill('black')
+            Config.screen.fill('black')  
 
             mouse_x, mouse_y = pygame.mouse.get_pos()
 
