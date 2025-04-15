@@ -11,11 +11,11 @@ from collections import deque
 from queue import PriorityQueue
 
 # testcases: (ghost, pacman)
-testcases = [((16, 13), (24, 14)),
-             ((21, 3), (15, 21)), 
-             ((27, 3), (29, 27)),
-             ((6, 2), (24, 26)), 
-             ((30, 27), (4, 2))]
+testcases = [((16, 13), (27, 18)),
+             ((21, 3), (4, 13)), 
+             ((27, 3), (13, 22)),
+             ((6, 2), (29, 27)), 
+             ((30, 27), (9, 4))]
 testcaseID = 0
 
 quit = False
