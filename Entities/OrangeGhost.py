@@ -46,15 +46,6 @@ class OrangeGhost(GhostInterface):
 
     
     
-    # Anh em chỉ cần viết thuật toán vào hàm này, các hàm còn lại Âu đã viết 
-   
-    
-    
-    
-    
-    
-    
-    
     def isValidPosPowerUp(self, x, y):
         if 0 <= x < Board.ROWS and 0 <= y < Board.COLS:
             if (Board.maze[x][y] < 3 or Board.maze[x][y] == 9) and Board.coordinates[x][y] == Board.BLANK:
