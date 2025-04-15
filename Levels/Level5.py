@@ -341,14 +341,14 @@ class Level5():
                 if curHoverOn:
                     Sounds.hover_sound.play()
 
-            if ClickOnButton == "Again":
+            if ClickOnButton == "Tiếp tục":
                 Sounds.click_sound.play()
                 return
             elif ClickOnButton == "Menu":
                 Sounds.click_sound.play()
                 quit = True
                 return
-            elif ClickOnButton == "Quit":
+            elif ClickOnButton == "Thoát":
                 Sounds.click_sound.play()
                 Config.running = False
                 return
