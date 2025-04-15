@@ -87,42 +87,42 @@ class Level3:
     
     return None, number_of_expanded_nodes
   
-  def UCSFindOne(self, ghost, pacman):
-    start_x, start_y = ghost
-    goal_x, goal_y = pacman
+  # def UCSFindOne(self, ghost, pacman):
+  #   start_x, start_y = ghost
+  #   goal_x, goal_y = pacman
     
-    frontier = [(0, start_x, start_y, [])]  # (cost, x, y, path)
-    heapq.heapify(frontier)
+  #   frontier = [(0, start_x, start_y, [])]  # (cost, x, y, path)
+  #   heapq.heapify(frontier)
     
-    visited = set()
-    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+  #   visited = set()
+  #   directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
     
-    while frontier:
-        cost, current_x, current_y, path = heapq.heappop(frontier)
-        if (current_x, current_y) == (goal_x, goal_y):
-            if path:
-                return path[0]
-            return (current_x, current_y)
+  #   while frontier:
+  #       cost, current_x, current_y, path = heapq.heappop(frontier)
+  #       if (current_x, current_y) == (goal_x, goal_y):
+  #           if path:
+  #               return path[0]
+  #           return (current_x, current_y)
         
-        if (current_x, current_y) in visited:
-            continue
+  #       if (current_x, current_y) in visited:
+  #           continue
         
-        visited.add((current_x, current_y))
+  #       visited.add((current_x, current_y))
         
-        for dx, dy in directions:
-            next_x, next_y = current_x + dx, current_y + dy
+  #       for dx, dy in directions:
+  #           next_x, next_y = current_x + dx, current_y + dy
             
-            # Check if the next position is valid (within bounds and not a wall)
-            if (0 <= next_x < len(Board.maze) and 
-                0 <= next_y < len(Board.maze[0]) and 
-                Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8] and  # Wall check
-                (next_x, next_y) not in visited):
+  #           # Check if the next position is valid (within bounds and not a wall)
+  #           if (0 <= next_x < len(Board.maze) and 
+  #               0 <= next_y < len(Board.maze[0]) and 
+  #               Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8] and  # Wall check
+  #               (next_x, next_y) not in visited):
                 
-                new_cost = cost + 1
-                new_path = path + [(current_x, current_y)]
-                heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
+  #               new_cost = cost + 1
+  #               new_path = path + [(current_x, current_y)]
+  #               heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
     
-    return None
+  #   return None
   
 
   def updatePos(self):
@@ -130,8 +130,8 @@ class Level3:
     pacman_pos = (Object.pacmanX, Object.pacmanY)
     
     # Find the next position using UCSFindOne
-    next_pos = self.UCSFindOne(ghost_pos, pacman_pos)
-    
+    next_possition, number_expanded_nodes = self.UcsFindAll(ghost_pos, pacman_pos)
+    next_pos = next_possition[0] if next_possition else None
     if next_pos:
         # update ghost position
         old_x, old_y = ghost_pos

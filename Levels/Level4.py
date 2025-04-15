@@ -8,7 +8,10 @@ import tracemalloc #de lay bo nho
 import math
 import heapq
 from collections import deque
+# <<<<<<< HEAD
 from collections import defaultdict
+# =======
+# >>>>>>> 7827e22845b2133cef45eac1d26e36b474c3baa2
 from queue import PriorityQueue
 
 # testcases: (ghost, pacman)
@@ -127,13 +130,85 @@ class Level4:
                         open_set.put((f, neighbor))
                     break  # chỉ xét 1 node trong mỗi hướng (đầu tiên gặp)
     return None, len(visited)
+# <<<<<<< HEAD
+# =======
+
+
+# >>>>>>> 7827e22845b2133cef45eac1d26e36b474c3baa2
   # hàm này viết trả về 1 bước đi 
   def AStarFindOne(self, ghost, pacman): # A*
-        
-        return None
+    start = ghost
+    goal = pacman
+
+    open_set = PriorityQueue()
+    open_set.put((0, start))
+
+    came_from = {}
+    g_score = {start: 0}
+    f_score = {start: self.heuristic(*start)}
+
+    visited = set(start)
+
+    DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    PATH_LIMIT = 100
+
+    while not open_set.empty():
+        _, current = open_set.get()
+        visited.add(current)
+
+        if current == goal or len(came_from) > PATH_LIMIT:
+            path = self.reconstruct_path(came_from, current)
+            return path[0]
+
+        for dx, dy in DIRECTIONS:
+            nx, ny = current
+
+            # Di chuyển thẳng theo hướng đó đến khi gặp node
+            while True:
+                nx += dx
+                ny += dy
+                if not self.isValidPos(nx, ny):
+                    break
+                if (nx, ny) in Board.nodes or (nx, ny) == goal:
+                    neighbor = (nx, ny)
+
+                    if neighbor in visited:
+                        break
+
+                    # Tránh va chạm ghost khác
+                    if neighbor in [(Object.pinkGhostX, Object.pinkGhostY),
+                                    (Object.orangeGhostX, Object.orangeGhostY),
+                                    (Object.blueGhostX, Object.blueGhostY)]:
+                        break
+
+                    tentative_g = g_score[current] + abs(current[0] - neighbor[0]) + abs(current[1] - neighbor[1])
+
+                    if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                        came_from[neighbor] = current
+                        g_score[neighbor] = tentative_g
+                        f = tentative_g + self.heuristic(*neighbor)
+                        f_score[neighbor] = f
+                        open_set.put((f, neighbor))
+                    break  # chỉ xét 1 node trong mỗi hướng (đầu tiên gặp)
+    return None
     
   def updatePos(self):
-        return
+    oldX, oldY = Object.redGhostX, Object.redGhostY
+    targetPos = self.AStarFindOne((oldX, oldY), (Object.pacmanX, Object.pacmanY))
+    if targetPos:
+      targetX, targetY = targetPos
+
+      newX, newY = oldX, oldY
+      if targetX != oldX:
+        newX += (targetX - oldX) // abs(targetX - oldX) 
+      if targetY != oldY:
+        newY += (targetY - oldY) // abs(targetY - oldY)
+
+      Board.coordinates[oldX][oldY] = Board.BLANK
+      Board.coordinates[newX][newY] = Board.RED_GHOST
+
+      Object.redGhostX = newX
+      Object.redGhostY = newY
   def get_volume(self, ghost_x, ghost_y, pac_x, pac_y, max_distance=15):
     distance = math.sqrt((ghost_x - pac_x) ** 2 + (ghost_y - pac_y) ** 2)  
     volume = max(0.0, 1 - (distance / max_distance))  # 0.1 là âm lượng nhỏ nhất, 1 là lớn nhất
