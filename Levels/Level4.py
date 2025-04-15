@@ -131,23 +131,23 @@ class Level4:
     
   def updatePos(self):
     oldX, oldY = Object.redGhostX, Object.redGhostY
-    #targetPos = self.AStarFindOne((oldX, oldY), (Object.pacmanX, Object.pacmanY))
     path, numOfExpendedNodes = self.AStarFindAll((Object.redGhostX, Object.redGhostY), (Object.pacmanX, Object.pacmanY))
-    targetPos=path[0]
-    if targetPos:
-      targetX, targetY = targetPos
+    if path:
+      targetPos=path[0]
+      if targetPos:
+        targetX, targetY = targetPos
 
-      newX, newY = oldX, oldY
-      if targetX != oldX:
-        newX += (targetX - oldX) // abs(targetX - oldX) 
-      if targetY != oldY:
-        newY += (targetY - oldY) // abs(targetY - oldY)
+        newX, newY = oldX, oldY
+        if targetX != oldX:
+          newX += (targetX - oldX) // abs(targetX - oldX) 
+        if targetY != oldY:
+          newY += (targetY - oldY) // abs(targetY - oldY)
 
-      Board.coordinates[oldX][oldY] = Board.BLANK
-      Board.coordinates[newX][newY] = Board.RED_GHOST
+        Board.coordinates[oldX][oldY] = Board.BLANK
+        Board.coordinates[newX][newY] = Board.RED_GHOST
 
-      Object.redGhostX = newX
-      Object.redGhostY = newY
+        Object.redGhostX = newX
+        Object.redGhostY = newY
   def get_volume(self, ghost_x, ghost_y, pac_x, pac_y, max_distance=15):
     distance = math.sqrt((ghost_x - pac_x) ** 2 + (ghost_y - pac_y) ** 2)  
     volume = max(0.0, 1 - (distance / max_distance))  # 0.1 là âm lượng nhỏ nhất, 1 là lớn nhất

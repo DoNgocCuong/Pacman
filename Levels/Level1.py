@@ -45,17 +45,63 @@ class Level1:
             for j in range (len(Board.coordinates[0])):
                 if (i, j) not in ((Object.blueGhostX, Object.blueGhostY), (Object.pacmanX, Object.pacmanY)):
                     Board.coordinates[i][j] = Board.BLANK
-    # hàm này viết trả hết tất cả các đường đi
+    # BFS trả về toàn bộ đường đi
     def BFSFindAll(self, ghost, pacman):
-                           
-        return None
-    # hàm này chỉ viết thuật toán trả về 1 bước 
-    def BFSFindOne(self, ghost, pacman):                     
-        return None
-    
+        bfs_direction = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # trái, phải, trên, dưới
+        queue = deque([ghost])
+        visited = set([ghost])
+        parent = {ghost: None}
+        expanded_nodes = 0  # Đếm số node mở rộng để báo cáo kết quả
+
+        if ghost == pacman:
+            return None, 0
+
+        while queue:
+            ghost_x, ghost_y = queue.popleft()
+            expanded_nodes += 1
+            
+            if (ghost_x, ghost_y) == pacman:
+                path = []
+                while (ghost_x, ghost_y) != ghost:
+                    path.append((ghost_x, ghost_y))
+                    (ghost_x, ghost_y) = parent[(ghost_x, ghost_y)]
+                path = path[::-1]
+                return path, expanded_nodes
+
+            for x, y in bfs_direction:
+                go_x = ghost_x + x
+                go_y = ghost_y + y
+                
+                if (0 <= go_x < Board.ROWS and 0 <= go_y < Board.COLS and
+                    (0 <= Board.maze[go_x][go_y] <= 2 or Board.maze[go_x][go_y] == 9) and
+                    (go_x, go_y) not in visited and
+                    (go_x, go_y) != (Object.pinkGhostX, Object.pinkGhostY) and
+                    (go_x, go_y) != (Object.orangeGhostX, Object.orangeGhostY) and
+                    (go_x, go_y) != (Object.redGhostX, Object.redGhostY)):
+                    queue.append((go_x, go_y))
+                    visited.add((go_x, go_y))
+                    parent[(go_x, go_y)] = (ghost_x, ghost_y)
+        
+        
+        return None, expanded_nodes
+
+
     
     def updatePos(self):
-        return 
+        oldX, oldY = Object.blueGhostX, Object.blueGhostY
+        list_path, expand = self.BFSFindAll((oldX, oldY), (Object.pacmanX, Object.pacmanY))
+        if list_path:
+            newPos = list_path[0]
+            if newPos:
+                newX, newY = newPos
+
+                Board.coordinates[oldX][oldY] = Board.BLANK
+                Board.coordinates[newX][newY] = Board.BLUE_GHOST
+
+                Object.blueGhostX = newX
+                Object.blueGhostY = newY
+
+            return 
     def get_volume(self, ghost_x, ghost_y, pac_x, pac_y, max_distance=15):
         distance = math.sqrt((ghost_x - pac_x) ** 2 + (ghost_y - pac_y) ** 2)  
         volume = max(0.0, 1 - (distance / max_distance))  # 0.1 là âm lượng nhỏ nhất, 1 là lớn nhất

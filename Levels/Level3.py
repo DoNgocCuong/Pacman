@@ -32,15 +32,16 @@ class Level3:
     Object.redGhostX, Object.redGhostY = -1, -1
     Object.blueGhostX, Object.blueGhostY = -1, -1
 
-    Board.maze = [row[:] for row in Board.initMaze]
+    Board.maze = [row[:] for row in Board.initMaze]  # Reset maze
+    Board.coordinates = [[Board.BLANK for _ in range(Board.COLS)] for _ in range(Board.ROWS)]  # Reset coordinates
 
-    # Setup tọa độ thực
-    (Object.realPacmanX, Object.realPacmanY) = Entity.getRealCoordinates((Object.pacmanX, Object.pacmanY), Object.PACMAN_SIZE)
-    (Object.realOrangeGhostX, Object.realOrangeGhostY) = Entity.getRealCoordinates((Object.orangeGhostX, Object.orangeGhostY), Object.ORANGE_GHOST_SIZE)
-
-    # Setup ma trận Coordinates 
+    # Setup coordinates
     Board.coordinates[Object.orangeGhostX][Object.orangeGhostY] = Board.ORANGE_GHOST
-    Board.coordinates[Object.pacmanX][Object.pacmanY] = Board.PACMAN 
+    Board.coordinates[Object.pacmanX][Object.pacmanY] = Board.PACMAN
+
+    # Setup real coordinates
+    Object.realPacmanX, Object.realPacmanY = Entity.getRealCoordinates((Object.pacmanX, Object.pacmanY), Object.PACMAN_SIZE)
+    Object.realOrangeGhostX, Object.realOrangeGhostY = Entity.getRealCoordinates((Object.orangeGhostX, Object.orangeGhostY), Object.ORANGE_GHOST_SIZE)
 
     for i in range (len(Board.coordinates)): # Chỉ giữ lại giá trị Pacman, OrangeGhost trong ma trận Coordinates, các giá trị còn lại bỏ
       for j in range (len(Board.coordinates[0])):
@@ -52,102 +53,147 @@ class Level3:
     start_x, start_y = ghost
     goal_x, goal_y = pacman
     
+    # Use a more efficient tuple structure in the priority queue
     frontier = [(0, start_x, start_y, [])]  # (cost, x, y, path)
     heapq.heapify(frontier)
     
     visited = set()
-    number_of_expanded_nodes = 0
+    expanded_nodes = 0
     directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    
+    # Pre-compute maze dimensions to avoid repeated len() calls
+    maze_rows = len(Board.maze)
+    maze_cols = len(Board.maze[0])
+    
+    # Pre-compute wall values for faster checking
+    wall_values = {3, 4, 5, 6, 7, 8}
+    
+    # Pre-compute other ghost positions for collision avoidance
+    other_ghosts = {
+        (Object.redGhostX, Object.redGhostY),
+        (Object.pinkGhostX, Object.pinkGhostY),
+        (Object.blueGhostX, Object.blueGhostY)
+    }
+    # Remove invalid ghost positions (-1, -1)
+    other_ghosts = {pos for pos in other_ghosts if pos[0] >= 0 and pos[1] >= 0}
     
     while frontier:
         cost, current_x, current_y, path = heapq.heappop(frontier)
+        expanded_nodes += 1
         
+        # Check if we've reached the goal
         if (current_x, current_y) == (goal_x, goal_y):
-            return path + [(current_x, current_y)], number_of_expanded_nodes
+            full_path = path + [(current_x, current_y)]
+            return full_path, expanded_nodes
         
+        # Skip if already visited
         if (current_x, current_y) in visited:
             continue
         
         visited.add((current_x, current_y))
-        number_of_expanded_nodes += 1
+        current_path = path + [(current_x, current_y)]
         
+        # Process all valid neighbor positions
         for dx, dy in directions:
             next_x, next_y = current_x + dx, current_y + dy
             
-            # Check if the next position is valid (within bounds and not a wall)
-            if (0 <= next_x < len(Board.maze) and 
-                0 <= next_y < len(Board.maze[0]) and 
-                Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8] and  # Wall check
+            # Fast bounds and wall check
+            if (0 <= next_x < maze_rows and 
+                0 <= next_y < maze_cols and 
+                Board.maze[next_x][next_y] not in wall_values and
                 (next_x, next_y) not in visited):
                 
+                # Skip if position is occupied by another ghost
+                if (next_x, next_y) in other_ghosts:
+                    continue
+                
                 new_cost = cost + 1
-                new_path = path + [(current_x, current_y)]
-                heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
+                heapq.heappush(frontier, (new_cost, next_x, next_y, current_path))
     
-    return None, number_of_expanded_nodes
+    # No path found
+    return [], expanded_nodes
   
-  def UCSFindOne(self, ghost, pacman):
-    start_x, start_y = ghost
-    goal_x, goal_y = pacman
+  # def UCSFindOne(self, ghost, pacman):
+  #   start_x, start_y = ghost
+  #   goal_x, goal_y = pacman
     
-    frontier = [(0, start_x, start_y, [])]  # (cost, x, y, path)
-    heapq.heapify(frontier)
+  #   frontier = [(0, start_x, start_y, [])]  
+  #   heapq.heapify(frontier)
     
-    visited = set()
-    directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+  #   visited = set()
+  #   directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
     
-    while frontier:
-        cost, current_x, current_y, path = heapq.heappop(frontier)
-        if (current_x, current_y) == (goal_x, goal_y):
-            if path:
-                return path[0]
-            return (current_x, current_y)
+  #   while frontier:
+  #       cost, current_x, current_y, path = heapq.heappop(frontier)
         
-        if (current_x, current_y) in visited:
-            continue
+  #       if (current_x, current_y) == (goal_x, goal_y):
+  #           if path:
+  #               return path[0]
+  #           return (current_x, current_y)
         
-        visited.add((current_x, current_y))
+  #       if (current_x, current_y) in visited:
+  #           continue
         
-        for dx, dy in directions:
-            next_x, next_y = current_x + dx, current_y + dy
+  #       visited.add((current_x, current_y))
+        
+  #       for dx, dy in directions:
+  #           # Calculate next position clearly and separately
+  #           next_x = current_x + dx
+  #           next_y = current_y + dy
             
-            # Check if the next position is valid (within bounds and not a wall)
-            if (0 <= next_x < len(Board.maze) and 
-                0 <= next_y < len(Board.maze[0]) and 
-                Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8] and  # Wall check
-                (next_x, next_y) not in visited):
+            
+  #           # Move in straight lines until reaching an intersection or wall
+  #           while (0 <= next_x < len(Board.maze) and 
+  #                 0 <= next_y < len(Board.maze[0]) and 
+  #                 Board.maze[next_x][next_y] not in [3, 4, 5, 6, 7, 8]):
                 
-                new_cost = cost + 1
-                new_path = path + [(current_x, current_y)]
-                heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
+  #               # Stop at nodes/intersections or the goal
+  #               if (next_x, next_y) in Board.nodes or (next_x, next_y) == (goal_x, goal_y):
+  #                   # Skip if occupied by another ghost
+  #                   if (next_x, next_y) in [(Object.redGhostX, Object.redGhostY),
+  #                                         (Object.pinkGhostX, Object.pinkGhostY),
+  #                                         (Object.blueGhostX, Object.blueGhostY)]:
+  #                       break
+                        
+  #                   if (next_x, next_y) not in visited:
+  #                       new_cost = cost + abs(current_x - next_x) + abs(current_y - next_y)
+  #                       new_path = path + [(current_x, current_y)]
+  #                       heapq.heappush(frontier, (new_cost, next_x, next_y, new_path))
+  #                   break
+                
+  #               # Keep moving in the same direction
+  #               next_x += dx
+  #               next_y += dy
     
-    return None
+  #   return None
   
 
   def updatePos(self):
     oldX, oldY = Object.orangeGhostX, Object.orangeGhostY
-    targetPos = self.UCSFindOne((oldX, oldY), (Object.pacmanX, Object.pacmanY))
-    print(oldX,oldY)
-    print(targetPos)
-    if targetPos:
-      targetX, targetY = targetPos
+    
+    # Get full path and expanded nodes from UcsFindAll
+    path, expanded_nodes = self.UcsFindAll((oldX, oldY), (Object.pacmanX, Object.pacmanY))
+    
+    # If path exists and has at least 2 positions (start + next)
+    if path and len(path) >= 2:
+        # The first position is current, second position is where to move
+        targetX, targetY = path[1]  # Get the next step from the path
+        
+        newX, newY = oldX, oldY
+        if targetX != oldX:
+            newX += (targetX - oldX) // abs(targetX - oldX) 
+        if targetY != oldY:
+            newY += (targetY - oldY) // abs(targetY - oldY)
 
-      newX, newY = oldX, oldY
-      if targetX != oldX:
-        newX += (targetX - oldX) // abs(targetX - oldX) 
-      if targetY != oldY:
-        newY += (targetY - oldY) // abs(targetY - oldY)
+        Board.coordinates[oldX][oldY] = Board.BLANK
+        Board.coordinates[newX][newY] = Board.ORANGE_GHOST
 
-      Board.coordinates[oldX][oldY] = Board.BLANK
-      Board.coordinates[newX][newY] = Board.ORANGE_GHOST
-
-      Object.orangeGhostX = newX
-      Object.orangeGhostY = newY
+        Object.orangeGhostX = newX
+        Object.orangeGhostY = newY
   def get_volume(self, ghost_x, ghost_y, pac_x, pac_y, max_distance=15):
     distance = math.sqrt((ghost_x - pac_x) ** 2 + (ghost_y - pac_y) ** 2)  
     volume = max(0.0, 1 - (distance / max_distance))  # 0.1 là âm lượng nhỏ nhất, 1 là lớn nhất
     return min(1.0, max(0.0, volume))  # Giới hạn từ 0.0 đến 1.0
-    
   def execute(self):
     global quit, start
 

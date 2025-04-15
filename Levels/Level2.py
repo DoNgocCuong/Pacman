@@ -9,11 +9,11 @@ import math
 import pygame
 
 # testcases: (ghost, pacman)
-testcases = [((16, 13), (24, 14)),
-             ((21, 3), (15, 21)), 
-             ((27, 3), (29, 27)),
-             ((6, 2), (24, 26)), 
-             ((30, 27), (4, 2))]
+testcases = [((16, 13), (27, 18)),
+             ((21, 3), (4, 13)), 
+             ((27, 3), (13, 22)),
+             ((6, 2), (29, 27)), 
+             ((30, 27), (9, 4))]
 testcaseID = 0
 
 quit = False
@@ -46,16 +46,77 @@ class Level2:
                 if (i, j) not in ((Object.pinkGhostX, Object.pinkGhostY), (Object.pacmanX, Object.pacmanY)):
                     Board.coordinates[i][j] = Board.BLANK
     # hàm này viết trả hết tất cả các đường đi
+    # hàm này viết trả hết tất cả các đường đi
     def DfsFindAll(self, ghost, pacman):
-        return
-    
-    # hàm này viết trả về 1 bước
-    def DFSFindOne(self, ghost, pacman):
-        return 
+        if ghost == pacman:
+            return None 
+        # Nếu ghost và pacman ở cùng một vị trí thì không cần tìm đường đi
+        directions = [(1, 0), (-1, 0), (0, -1), (0, 1)] # Xuống, Lên, Trái, Phải
+        # độ sâu tối đa
+        max_depth = 100
+        # độ sâu hiện tại
+        current_depth = 1
+        # số lượng node đã duyệt
+        nodes_expanded = 0
+        # duyệt từ độ sâu 1 đến độ sâu tối đa
+        while current_depth <= max_depth:
+            stack = deque([ghost]) # bắt đầu stack từ ghost
+            visited = {ghost} # đánh dấu ghost đã được duyệt
+            depth_map = {ghost: 0} # đánh dấu độ sâu của ghost là 0
+            parent_map = {ghost: None} # đánh dấu cha của ghost là None
+            while stack: # stack không rỗng
+                current = stack.pop() # lấy ra phần tử cuối cùng trong stack
+                nodes_expanded += 1 # tăng số lượng node đã duyệt lên 1
+                current_depth_level = depth_map[current] # lấy độ sâu của phần tử hiện tại
+                if current == pacman: # nếu phần tử hiện tại là pacman thì trả về đường đi
+                    path = [] # khởi tạo đường đi
+                    while current != ghost: # trong khi phần tử hiện tại không phải là ghost thì tiếp tục duyệt
+                        path.append(current) # thêm phần tử hiện tại vào đường đi
+                        current = parent_map[current]  # cập nhật phần tử hiện tại là cha của nó
+                    return path[::-1], nodes_expanded # trả về đường đi từ ghost đến pacman và số lượng node đã duyệt
+                if current_depth_level < current_depth: # nếu độ sâu của phần tử hiện tại nhỏ hơn độ sâu tối đa thì tiếp tục duyệt
+                    for dx, dy in directions: # duyệt các hướng đi
+                        neighbor = (current[0] + dx, current[1] + dy) # tính toán tọa độ của phần tử kề bên
+                        # kiểm tra tọa độ kề bên có hợp lệ không và có trong danh sách đã duyệt chưa
+                        # kiểm tra độ sâu của phần tử kề bên có nhỏ hơn độ sâu đã duyệt chưa
+                        # kiểm tra phần tử kề bên có phải là pacman không
+                        if (0 <= neighbor[0] < Board.ROWS and 0 <= neighbor[1] < Board.COLS and
+                            (neighbor not in visited or current_depth_level + 1 < depth_map.get(neighbor, float('inf')))):
+                            # kiểm tra phần tử kề bên có phải là tường không
+                            # kiểm tra phần tử kề bên có phải là pacman không 
+                            if (0 <= Board.maze[neighbor[0]][neighbor[1]] <= 2 or Board.maze[neighbor[0]][neighbor[1]] == 9) and \
+                            neighbor not in {(Object.blueGhostX, Object.blueGhostY),
+                                                (Object.orangeGhostX, Object.orangeGhostY),
+                                                (Object.redGhostX, Object.redGhostY)}:
+                                # nếu phần tử kề bên không phải là tường và không phải là pacman thì thêm vào stack
+                                # thêm phần tử kề bên vào stack
+                                stack.append(neighbor)
+                                # đánh dấu phần tử kề bên đã được duyệt
+                                visited.add(neighbor)
+                                # đánh dấu độ sâu của phần tử kề bên là độ sâu của phần tử hiện tại + 1
+                                depth_map[neighbor] = current_depth_level + 1
+                                # đánh dấu cha của phần tử kề bên là phần tử hiện tại
+                                parent_map[neighbor] = current
+            # nếu không tìm thấy đường đi thì tăng độ sâu lên 1 và tiếp tục duyệt
+            current_depth += 1
+        # nếu không tìm thấy đường đi thì trả về None
+        return None, nodes_expanded
 
     
     def updatePos(self):
-        return
+        oldX, oldY = Object.pinkGhostX, Object.pinkGhostY
+        list_path, expand = self.DfsFindAll((oldX, oldY), (Object.pacmanX, Object.pacmanY))
+        if list_path:
+            newPos = list_path[0]         
+            if newPos:
+                newX, newY = newPos
+
+                Board.coordinates[oldX][oldY] = Board.BLANK
+                Board.coordinates[newX][newY] = Board.PINK_GHOST
+
+                Object.pinkGhostX = newX
+                Object.pinkGhostY = newY
+    
     def get_volume(self, ghost_x, ghost_y, pac_x, pac_y, max_distance=15):
         distance = math.sqrt((ghost_x - pac_x) ** 2 + (ghost_y - pac_y) ** 2)  
         volume = max(0.0, 1 - (distance / max_distance))  # 0.1 là âm lượng nhỏ nhất, 1 là lớn nhất
