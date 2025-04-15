@@ -101,7 +101,6 @@ class PinkGhost(GhostInterface):
                                     depths[(go_x, go_y)] = depth + 1
                                     parent[(go_x, go_y)] = (ghost_x, ghost_y)
 
-                                   
                 else: visited.discard((ghost_x, ghost_y))
             depth_limit += 1
     

@@ -104,7 +104,7 @@ class Level5():
         quit = False
         
         font = pygame.font.Font("Assets/fonts/arial.ttf", 20)
-        shortkey = font.render("ESC: Menu  Q: thoát", True, (255, 0,0))
+        shortkey = font.render("ESC: Menu  Q: Thoát", True, (255, 0,0))
         red=Level4()
         pink=Level2()
         orange=Level3()
@@ -257,7 +257,7 @@ class Level5():
         
         # Hướng dẫn phím tắt
         font = pygame.font.Font(None, 30)
-        shortkey = font.render("ESC: Menu  Q: thoát", True, (255,0, 0))
+        shortkey = font.render("ESC: Menu  Q: Thoát", True, (255,0, 0))
 
         # Font và màu sắc
         font_big = pygame.font.Font(None, 150)  # Font lớn cho "YOU LOST"

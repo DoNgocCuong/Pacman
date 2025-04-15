@@ -68,7 +68,7 @@ class Level4:
     start = False
 
     font = pygame.font.Font("Assets/fonts/arial.ttf", 20)
-    shortkey = font.render("ESC: Menu  Q: thoát", True, (255, 0,0))
+    shortkey = font.render("ESC: Menu  Q: Thoát", True, (255, 0,0))
 
     while Config.running and not quit:
       self.setup()
