@@ -8,6 +8,8 @@ import tracemalloc #de lay bo nho
 import math
 import heapq
 from collections import deque
+from collections import defaultdict
+from queue import PriorityQueue
 
 # testcases: (ghost, pacman)
 testcases = [((16, 13), (24, 14)),
@@ -47,8 +49,84 @@ class Level4:
         if (i, j) not in ((Object.redGhostX, Object.redGhostY), (Object.pacmanX, Object.pacmanY)):
           Board.coordinates[i][j] = Board.BLANK
   # hàm này viết trả hết tất cả các đường đi
+  def reconstruct_path(self, came_from, current):
+    path = []
+    while current in came_from:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+    return path
+
+  def heuristic(self, ghostX, ghostY):
+    return abs(ghostX - Object.pacmanX) + abs(ghostY - Object.pacmanY)
+  def reconstruct_path(self, came_from, current):
+    path = []
+    while current in came_from:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+    return path
+  def isValidPos(self, x, y):
+        if 0 <= x < Board.ROWS and 0 <= y < Board.COLS:
+            if (Board.maze[x][y] < 3 or Board.maze[x][y] == 9) and Board.coordinates[x][y] in (Board.BLANK, Board.PACMAN):
+                return True
+        return False
+
   def AStarFindAll(self, ghost, pacman):
-        return
+    start = ghost
+    goal = pacman
+
+    open_set = PriorityQueue()
+    open_set.put((0, start))
+
+    came_from = {}
+    g_score = {start: 0}
+    f_score = {start: self.heuristic(*start)}
+
+    visited = set()
+
+    DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    PATH_LIMIT = 100
+
+    while not open_set.empty():
+        _, current = open_set.get()
+        visited.add(current)
+
+        if current == goal or len(came_from) > PATH_LIMIT:
+            path = self.reconstruct_path(came_from, current)
+            return path, len(visited)
+
+        for dx, dy in DIRECTIONS:
+            nx, ny = current
+
+            # Di chuyển thẳng theo hướng đó đến khi gặp node
+            while True:
+                nx += dx
+                ny += dy
+                if not self.isValidPos(nx, ny):
+                    break
+                if (nx, ny) in Board.nodes or (nx, ny) == goal:
+                    neighbor = (nx, ny)
+
+                    if neighbor in visited:
+                        break
+
+                    # Tránh va chạm ghost khác
+                    if neighbor in [(Object.pinkGhostX, Object.pinkGhostY),
+                                    (Object.orangeGhostX, Object.orangeGhostY),
+                                    (Object.blueGhostX, Object.blueGhostY)]:
+                        break
+
+                    tentative_g = g_score[current] + abs(current[0] - neighbor[0]) + abs(current[1] - neighbor[1])
+
+                    if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                        came_from[neighbor] = current
+                        g_score[neighbor] = tentative_g
+                        f = tentative_g + self.heuristic(*neighbor)
+                        f_score[neighbor] = f
+                        open_set.put((f, neighbor))
+                    break  # chỉ xét 1 node trong mỗi hướng (đầu tiên gặp)
+    return None, len(visited)
   # hàm này viết trả về 1 bước đi 
   def AStarFindOne(self, ghost, pacman): # A*
         
