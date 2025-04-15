@@ -526,7 +526,7 @@ class Level6:
                 if curHoverOn:
                     Sounds.hover_sound.play()
 
-            if ClickOnButton == "Tiếp Tục":
+            if ClickOnButton == "Tiếp tục":
                 Sounds.click_sound.play()
                 return
             elif ClickOnButton == "Menu":

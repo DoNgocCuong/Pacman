@@ -260,15 +260,15 @@ class Level5():
         shortkey = font.render("ESC: Menu  Q: thoát", True, (255,0, 0))
 
         # Font và màu sắc
-        font_big = pygame.font.Font(None, 150)  # Font lớn cho "YOU LOST"
-        font_small = pygame.font.Font(None, 80)  # Font cho "SCORE"
-        font_button = pygame.font.Font(None, 40)  # Font cho các nút
+        font_big = pygame.font.Font("Assets/fonts/arial.ttf", 20)  # Font lớn cho "YOU LOST"
+        font_small = pygame.font.Font("Assets/fonts/arial.ttf", 20)  # Font cho "SCORE"
+        font_button = pygame.font.Font("Assets/fonts/arial.ttf", 20)  # Font cho các nút
         color_text = (0, 0, 0)  # Màu chữ đen
         color_button = (255, 255, 255)  # Màu nền nút trắng
         color_hover = (144, 238, 144)  # Màu hover xanh nhạt
 
         # Chữ YOU LOST
-        font_big = pygame.font.Font(None, 70)  # Chọn font, 150px là kích thước chữ
+        font_big = pygame.font.Font("Assets/fonts/arial.ttf", 150)  # Chọn font, 150px là kích thước chữ
         finish_text = font_big.render("Bạn đã thua", True, (144, 238, 144))  # Chữ đỏ
         finish_text_rect = finish_text.get_rect(center=(400, 800 * 1 // 4))  # Căn giữa, y = 2/3 chiều cao màn hình
         
